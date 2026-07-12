@@ -1,5 +1,5 @@
 import uuid
-from fastapi import APIRouter, BackgroundTasks, WebSocket, WebSocketDisconnect, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, WebSocket, WebSocketDisconnect, Depends, HTTPException, UploadFile, File
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -217,9 +217,14 @@ async def get_settings(db: AsyncSession = Depends(get_db)):
         )
     return outputs
 
-@router.delete("/settings")
-async def delete_settings(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(UserSettings).where(UserSettings.user_id == DEFAULT_USER_ID))
+@router.delete("/settings/{provider}")
+async def delete_settings(provider: str, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(UserSettings).where(
+            (UserSettings.user_id == DEFAULT_USER_ID) & 
+            (UserSettings.provider == provider)
+        )
+    )
     user_setting = result.scalars().first()
     if user_setting:
         await db.delete(user_setting)
@@ -394,3 +399,18 @@ async def graph_live_websocket(websocket: WebSocket):
             await websocket.close()
         except Exception:
             pass
+
+@router.post("/project/upload")
+async def upload_project(files: List[UploadFile] = File(...)):
+    extracted_text = []
+    for file in files:
+        try:
+            content = await file.read()
+            text = content.decode('utf-8')
+            extracted_text.append(f"--- File: {file.filename} ---\n{text}\n")
+        except UnicodeDecodeError:
+            extracted_text.append(f"--- File: {file.filename} ---\n[Binary or non-UTF8 file skipped]\n")
+        except Exception as e:
+            extracted_text.append(f"--- File: {file.filename} ---\n[Error reading file: {e}]\n")
+            
+    return {"text": "\n".join(extracted_text)}

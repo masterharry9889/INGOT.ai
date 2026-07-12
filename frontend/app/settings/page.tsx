@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Save, Plus, Trash2 } from 'lucide-react';
+import { Save, Plus, Trash2, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 
 const API_BASE = 'http://127.0.0.1:8000';
 
@@ -105,8 +106,13 @@ export default function SettingsView() {
   };
 
   return (
-    <div style={{ padding: '2rem', height: '100%', overflowY: 'auto', width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
-      <h1 style={{ marginBottom: '2rem' }}>Settings</h1>
+    <div style={{ padding: '2rem 5%', height: '100%', overflowY: 'auto', width: '100%' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+        <Link href="/" className="notch-icon-btn" title="Back to Dashboard" style={{ margin: 0 }}>
+          <ArrowLeft size={20} />
+        </Link>
+        <h1 style={{ margin: 0 }}>Settings</h1>
+      </div>
       
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
         
@@ -162,22 +168,43 @@ export default function SettingsView() {
             </div>
           </div>
           
-          <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.5rem' }}>Saved Configurations</h3>
+          <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem' }}>Saved Configurations</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {settingsList.length === 0 && <div style={{ color: 'var(--text-secondary)' }}>No configurations saved.</div>}
             {settingsList.map((s, idx) => (
-              <div key={idx} style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div key={idx} style={{ background: '#000000', border: '1px solid var(--glass-border)', padding: '1rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontWeight: 600, textTransform: 'capitalize' }}>{s.provider}</div>
                   <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Model: {s.model_name}</div>
                   <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>Key: {s.api_key_masked}</div>
                 </div>
-                <button 
-                  onClick={() => handleEditSettings(s)}
-                  style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
-                >
-                  Edit
-                </button>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button 
+                    onClick={() => handleEditSettings(s)}
+                    style={{ background: 'transparent', border: '1px solid var(--glass-border)', color: 'white', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
+                  >
+                    Edit
+                  </button>
+                  <button 
+                    onClick={async () => {
+                      if (!confirm(`Are you sure you want to delete the saved API key for ${s.provider}?`)) return;
+                      try {
+                        const res = await fetch(`${API_BASE}/settings/${s.provider}`, { method: 'DELETE' });
+                        if (!res.ok) throw new Error('Failed to delete setting');
+                        const updatedRes = await fetch(`${API_BASE}/settings`);
+                        setSettingsList(await updatedRes.json());
+                        if (settings.provider === s.provider) {
+                          setMaskedKey('');
+                        }
+                      } catch (e) {
+                        alert(e);
+                      }
+                    }}
+                    style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ef4444', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -187,7 +214,7 @@ export default function SettingsView() {
         <div className="glass" style={{ padding: '2rem' }}>
           <h2 style={{ marginBottom: '1.5rem' }}>Agent Registry</h2>
           
-          <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem' }}>
+          <div style={{ background: '#000000', border: '1px solid var(--glass-border)', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem' }}>
             <h3 style={{ fontSize: '1rem', marginBottom: '1rem' }}>Create Custom Agent</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <input className="input-field" placeholder="ID (e.g. support-agent)" value={newAgent.id} onChange={e => setNewAgent({...newAgent, id: e.target.value})} />

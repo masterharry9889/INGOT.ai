@@ -16,6 +16,8 @@ export default function MainView() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [projectName, setProjectName] = useState('');
   const [projectType, setProjectType] = useState<'conversation' | 'upload'>('conversation');
+  const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const router = useRouter();
@@ -56,19 +58,58 @@ export default function MainView() {
     }
   };
 
-  const handleCreateProject = () => {
+  const handleCreateProject = async () => {
     if (!projectName.trim()) return;
     
+    if (projectType === 'upload' && (!selectedFiles || selectedFiles.length === 0)) {
+      alert("Please select at least one file to upload.");
+      return;
+    }
+    
+    setIsUploading(true);
+    const newProjectId = Date.now().toString();
     const newProject: Project = {
-      id: Date.now().toString(),
+      id: newProjectId,
       name: projectName,
       date: new Date().toLocaleDateString(),
       type: projectType
     };
     
+    if (projectType === 'upload' && selectedFiles) {
+      const formData = new FormData();
+      for (let i = 0; i < selectedFiles.length; i++) {
+        formData.append('files', selectedFiles[i]);
+      }
+      
+      try {
+        const res = await fetch(`http://127.0.0.1:8000/project/upload`, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        
+        const initialMessage = {
+          id: Date.now().toString(),
+          role: 'user',
+          content: `Please analyze these uploaded files and extract the knowledge graph entities:\n\n${data.text}`,
+          timestamp: new Date().toISOString()
+        };
+        localStorage.setItem(`ingot_chat_${newProjectId}`, JSON.stringify([initialMessage]));
+      } catch (err) {
+        console.error("Upload failed", err);
+        alert("Upload failed. Make sure the backend server is running.");
+        setIsUploading(false);
+        return;
+      }
+    }
+    
     setProjects([newProject, ...projects]);
     setProjectName('');
+    setSelectedFiles(null);
     setIsModalOpen(false);
+    setIsUploading(false);
+    
+    router.push(`/project/${newProjectId}/chat`);
   };
 
   return (
@@ -89,7 +130,7 @@ export default function MainView() {
         </Link>
       </header>
       
-      <div style={{ maxWidth: '800px', width: '100%', padding: '3rem 2rem' }}>
+      <div style={{ width: '100%', padding: '3rem 5%' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
           <h1 style={{ fontSize: '2.5rem', margin: 0 }}>Your Dashboard</h1>
         </div>
@@ -257,10 +298,29 @@ export default function MainView() {
               />
             </div>
             
+            {projectType === 'upload' && (
+              <div style={{ marginBottom: '2rem' }}>
+                <label className="input-label">Select Files to Analyze</label>
+                <input 
+                  type="file" 
+                  multiple
+                  onChange={e => setSelectedFiles(e.target.files)}
+                  style={{
+                    width: '100%',
+                    padding: '1rem',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px dashed rgba(255,255,255,0.2)',
+                    borderRadius: '8px',
+                    color: 'white'
+                  }}
+                />
+              </div>
+            )}
+            
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-              <button className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Cancel</button>
-              <button className="btn" onClick={handleCreateProject} disabled={!projectName.trim()}>
-                Create
+              <button className="btn btn-secondary" onClick={() => setIsModalOpen(false)} disabled={isUploading}>Cancel</button>
+              <button className="btn" onClick={handleCreateProject} disabled={!projectName.trim() || isUploading}>
+                {isUploading ? 'Uploading...' : 'Create'}
               </button>
             </div>
           </div>
