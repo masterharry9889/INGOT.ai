@@ -59,7 +59,7 @@ export default function CanvasView() {
   }, [storageKey]);
 
   useEffect(() => {
-    if (isLoaded) {
+    if (isLoaded && storageKey) {
       localStorage.setItem(storageKey, JSON.stringify({ savedNodes: nodes, savedEdges: edges }));
     }
   }, [nodes, edges, isLoaded, storageKey]);

@@ -44,7 +44,7 @@ export default function AgentsView() {
   }, [storageKey]);
 
   useEffect(() => {
-    if (isLoaded) {
+    if (isLoaded && storageKey) {
       localStorage.setItem(storageKey, JSON.stringify(activeAgents));
     }
   }, [activeAgents, isLoaded, storageKey]);
