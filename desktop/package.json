@@ -43,6 +43,7 @@
     },
     "linux": {
       "target": "AppImage",
+      "icon": "icon.png",
       "extraResources": [
         {
           "from": "../backend/dist/ingot-backend",
