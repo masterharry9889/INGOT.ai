@@ -45,7 +45,17 @@ export default function MainView() {
     setProjects(projects.filter(p => p.id !== id));
     
     // Wipe isolated frontend state
-    localStorage.removeItem(`ingot_chat_${id}`);
+    const chatsData = localStorage.getItem(`ingot_chats_${id}`);
+    if (chatsData) {
+      try {
+        const chats = JSON.parse(chatsData);
+        chats.forEach((chat: any) => {
+          localStorage.removeItem(`ingot_chat_${id}_${chat.id}`);
+        });
+      } catch (err) {}
+      localStorage.removeItem(`ingot_chats_${id}`);
+    }
+    localStorage.removeItem(`ingot_chat_${id}`); // Legacy
     localStorage.removeItem(`ingot_canvas_nodes_${id}`);
     localStorage.removeItem(`ingot_canvas_edges_${id}`);
     localStorage.removeItem(`ingot_active_agents_${id}`);
@@ -94,13 +104,16 @@ export default function MainView() {
           content: `Please analyze these uploaded files and extract the knowledge graph entities:\n\n${data.text}`,
           timestamp: new Date().toISOString()
         };
-        localStorage.setItem(`ingot_chat_${newProjectId}`, JSON.stringify([initialMessage]));
+        localStorage.setItem(`ingot_chats_${newProjectId}`, JSON.stringify([{ id: 'default', name: 'Default Chat' }]));
+        localStorage.setItem(`ingot_chat_${newProjectId}_default`, JSON.stringify([initialMessage]));
       } catch (err) {
         console.error("Upload failed", err);
         alert("Upload failed. Make sure the backend server is running.");
         setIsUploading(false);
         return;
       }
+    } else {
+      localStorage.setItem(`ingot_chats_${newProjectId}`, JSON.stringify([{ id: 'default', name: 'Default Chat' }]));
     }
     
     setProjects([newProject, ...projects]);

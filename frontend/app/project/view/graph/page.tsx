@@ -25,7 +25,6 @@ export default function GraphView() {
   const [selectedNode, setSelectedNode] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  if (!projectId) return null;
 
   const [panelOpen, setPanelOpen] = useState(false);
   
@@ -54,6 +53,8 @@ export default function GraphView() {
   }, []);
 
   useEffect(() => {
+    if (!projectId) return;
+
     fetch(`${API_BASE}/graph/${projectId}`)
       .then(res => res.json())
       .then(data => {
@@ -112,7 +113,7 @@ export default function GraphView() {
     };
     
     return () => ws.close();
-  }, []);
+  }, [projectId]);
 
   const nodeColor = useCallback((node: any) => {
     if (connectSource?.id === node.id) return '#fbbf24'; // Warning yellow for selected source
@@ -243,6 +244,8 @@ export default function GraphView() {
       }
     }
   };
+
+  if (!projectId) return null;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 64px)', width: '100%', paddingTop: '4rem' }}>

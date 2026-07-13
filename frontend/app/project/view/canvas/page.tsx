@@ -37,15 +37,14 @@ export default function CanvasView() {
     setProjectId(params.get('id'));
   }, []);
 
-  if (!projectId) return null;
-  
-  const storageKey = `ingot_canvas_${projectId}`;
+  const storageKey = projectId ? `ingot_canvas_${projectId}` : null;
 
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
+    if (!storageKey) return;
     const saved = localStorage.getItem(storageKey);
     if (saved) {
       try {
@@ -124,7 +123,7 @@ export default function CanvasView() {
   }, [isLoaded]);
 
 
-  if (!isLoaded) return null;
+  if (!projectId || !isLoaded) return null;
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'absolute', top: 0, left: 0 }}>

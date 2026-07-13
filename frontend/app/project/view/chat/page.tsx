@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, use } from 'react';
-import { Send, Bot, User, ArrowLeft } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Send, Bot, User, Plus, Trash2, Edit2, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -39,19 +39,59 @@ export default function ChatView() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  if (!projectId) return null;
+  const [chats, setChats] = useState<{id: string, name: string}[]>([]);
+  const [activeChatId, setActiveChatId] = useState<string>('default');
+  const [editingChatId, setEditingChatId] = useState<string | null>(null);
+  const [editingChatName, setEditingChatName] = useState<string>('');
 
   const [input, setInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const storageKey = `ingot_chat_${projectId}`;
-
+  // Initialize and load chats
   useEffect(() => {
+    if (!projectId) return;
+    
+    const newChatsKey = `ingot_chats_${projectId}`;
+    const legacyKey = `ingot_chat_${projectId}`;
+    
+    const savedChats = localStorage.getItem(newChatsKey);
+    let currentChats = [{ id: 'default', name: 'Default Chat' }];
+    
+    if (savedChats) {
+      try {
+        currentChats = JSON.parse(savedChats);
+      } catch (e) {}
+    } else {
+      // Migration check
+      const legacyData = localStorage.getItem(legacyKey);
+      if (legacyData) {
+        localStorage.setItem(`ingot_chat_${projectId}_default`, legacyData);
+      }
+      localStorage.setItem(newChatsKey, JSON.stringify(currentChats));
+    }
+    
+    setChats(currentChats);
+    if (currentChats.length > 0) {
+      setActiveChatId(currentChats[0].id);
+    }
+    setIsLoaded(true);
+  }, [projectId]);
+
+  // Persist chats array
+  useEffect(() => {
+    if (!projectId || !isLoaded) return;
+    localStorage.setItem(`ingot_chats_${projectId}`, JSON.stringify(chats));
+  }, [chats, isLoaded, projectId]);
+
+  const storageKey = projectId && activeChatId ? `ingot_chat_${projectId}_${activeChatId}` : '';
+
+  // Load messages for the active chat
+  useEffect(() => {
+    if (!storageKey || !isLoaded) return;
     const saved = localStorage.getItem(storageKey);
     if (saved) {
       try {
-        // Clean up any streaming states that might have been interrupted by a page reload
         const parsed = JSON.parse(saved);
         const cleaned = parsed.map((m: Message) => 
           m.status === 'streaming' ? { ...m, status: 'error', content: m.content + '\n[Connection interrupted]' } : m
@@ -59,12 +99,16 @@ export default function ChatView() {
         setMessages(cleaned);
       } catch (e) {
         console.error("Failed to parse saved chat history");
+        setMessages([]);
       }
+    } else {
+      setMessages([]);
     }
-    setIsLoaded(true);
-  }, [storageKey]);
+  }, [storageKey, isLoaded, activeChatId]);
 
+  // Save messages for the active chat
   useEffect(() => {
+    if (!storageKey) return;
     if (isLoaded) {
       localStorage.setItem(storageKey, JSON.stringify(messages));
     }
@@ -87,6 +131,47 @@ export default function ChatView() {
     scrollToBottom();
   }, [messages]);
 
+  const createNewChat = () => {
+    const newChatId = Date.now().toString();
+    const newChatName = `New Chat ${chats.length + 1}`;
+    setChats([...chats, { id: newChatId, name: newChatName }]);
+    setActiveChatId(newChatId);
+    setEditingChatId(newChatId);
+    setEditingChatName(newChatName);
+  };
+
+  const deleteChat = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newChats = chats.filter(c => c.id !== id);
+    if (newChats.length === 0) {
+      const newDefault = { id: Date.now().toString(), name: 'Default Chat' };
+      setChats([newDefault]);
+      setActiveChatId(newDefault.id);
+    } else {
+      setChats(newChats);
+      if (activeChatId === id) {
+        setActiveChatId(newChats[0].id);
+      }
+    }
+    localStorage.removeItem(`ingot_chat_${projectId}_${id}`);
+  };
+
+  const startRenameChat = (chat: {id: string, name: string}, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingChatId(chat.id);
+    setEditingChatName(chat.name);
+  };
+
+  const saveRenameChat = (e?: React.MouseEvent | React.KeyboardEvent) => {
+    if (e) e.stopPropagation();
+    if (!editingChatName.trim()) {
+      setEditingChatId(null);
+      return;
+    }
+    setChats(chats.map(c => c.id === editingChatId ? { ...c, name: editingChatName.trim() } : c));
+    setEditingChatId(null);
+  };
+
   const handleSend = async () => {
     const activeAgentsKey = `ingot_active_agents_${projectId}`;
     const savedAgents = localStorage.getItem(activeAgentsKey);
@@ -102,7 +187,7 @@ export default function ChatView() {
          activeAgentsToRun = [agents[0].id];
        } else {
          alert("Cannot connect to the backend server. Please make sure your API server is running (uvicorn backend.main:app) and refresh the page.");
-         return; // no agents available
+         return; 
        }
     }
 
@@ -190,7 +275,6 @@ export default function ChatView() {
         };
         
         ws.onclose = () => {
-          // If it closed while still streaming, it was an unexpected drop
           setMessages(prev => {
             const isStillStreaming = prev.some(msg => msg.id === agentMsgId && msg.status === 'streaming');
             if (isStillStreaming) {
@@ -210,10 +294,74 @@ export default function ChatView() {
     });
   };
 
+  if (!projectId) return null;
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', paddingTop: '5rem' }}>
-      <div className="chat-container" style={{ height: 'calc(100vh - 80px)' }}>
-        <div className="chat-messages">
+    <div style={{ display: 'flex', height: '100%', width: '100%', paddingTop: '5rem' }}>
+      
+      {/* Sidebar for multiple chats */}
+      <div className="sidebar" style={{ width: '260px', borderRight: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', background: 'var(--bg-secondary)', padding: '1.5rem', zIndex: 10 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <h2 style={{ fontSize: '1.2rem', margin: 0, fontFamily: 'Outfit', fontWeight: 600, color: 'white' }}>Chats</h2>
+          <button className="notch-icon-btn" style={{ margin: 0, width: '32px', height: '32px' }} onClick={createNewChat} title="New Chat">
+            <Plus size={18} />
+          </button>
+        </div>
+        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          {chats.map(chat => (
+            <div 
+              key={chat.id} 
+              onClick={() => setActiveChatId(chat.id)}
+              style={{ 
+                padding: '0.75rem', 
+                borderRadius: '8px', 
+                background: activeChatId === chat.id ? 'rgba(255,255,255,0.08)' : 'transparent',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                transition: 'all 0.2s ease',
+                borderLeft: activeChatId === chat.id ? '2px solid var(--primary)' : '2px solid transparent',
+                color: activeChatId === chat.id ? 'var(--text-primary)' : 'var(--text-secondary)'
+              }}
+              onMouseEnter={(e) => { if(activeChatId !== chat.id) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+              onMouseLeave={(e) => { if(activeChatId !== chat.id) e.currentTarget.style.background = 'transparent'; }}
+            >
+              {editingChatId === chat.id ? (
+                <div style={{ display: 'flex', alignItems: 'center', width: '100%', gap: '0.5rem' }}>
+                  <input 
+                    autoFocus
+                    value={editingChatName}
+                    onChange={(e) => setEditingChatName(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && saveRenameChat(e)}
+                    onBlur={() => saveRenameChat()}
+                    onClick={(e) => e.stopPropagation()}
+                    style={{ flex: 1, width: '100%', background: '#000', border: '1px solid var(--primary)', color: 'white', padding: '0.25rem 0.5rem', borderRadius: '4px', outline: 'none', fontSize: '0.9rem' }}
+                  />
+                  <button onClick={saveRenameChat} style={{ background: 'none', border: 'none', color: 'var(--success)', cursor: 'pointer', padding: 0 }}><Check size={16} /></button>
+                </div>
+              ) : (
+                <>
+                  <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, fontWeight: 500, fontSize: '0.95rem' }}>
+                    {chat.name}
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.4rem', opacity: activeChatId === chat.id ? 1 : 0.5, transition: 'opacity 0.2s' }}>
+                    <button onClick={(e) => startRenameChat(chat, e)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: '0.1rem' }} title="Rename">
+                      <Edit2 size={14} style={{ transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--primary)'} onMouseLeave={e => e.currentTarget.style.color = 'inherit'} />
+                    </button>
+                    <button onClick={(e) => deleteChat(chat.id, e)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: '0.1rem' }} title="Delete">
+                      <Trash2 size={14} style={{ transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#ef4444'} onMouseLeave={e => e.currentTarget.style.color = 'inherit'} />
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="chat-container" style={{ flex: 1, padding: '2rem 10%', height: 'calc(100vh - 5rem)', position: 'relative' }}>
+        <div className="chat-messages" style={{ height: 'calc(100% - 80px)' }}>
           {messages.length === 0 && (
             <div style={{ margin: 'auto', textAlign: 'center', color: 'var(--text-secondary)' }}>
               <Bot size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
@@ -256,7 +404,7 @@ export default function ChatView() {
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="chat-input-area">
+        <div className="chat-input-area" style={{ position: 'absolute', bottom: '2rem', left: '10%', right: '10%' }}>
           <input 
             type="text" 
             className="chat-input" 

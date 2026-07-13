@@ -133,6 +133,7 @@ async def process_event(event: dict):
                         "source": existing_edge.source_id,
                         "target": existing_edge.target_id,
                         "weight": existing_edge.weight,
+                        "type": existing_edge.relation_type,
                         "action": "updated"
                     })
                 else:
@@ -152,6 +153,7 @@ async def process_event(event: dict):
                         "source": new_edge.source_id,
                         "target": new_edge.target_id,
                         "weight": 1.0,
+                        "type": new_edge.relation_type,
                         "action": "created"
                     })
                     

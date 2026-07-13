@@ -1,10 +1,13 @@
 import os
 from cryptography.fernet import Fernet
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # In a real app, this MUST come from an environment variable and never be committed.
-# For local v1 development, we use a fixed mock key so restarts don't invalidate DB keys.
-SECRET_KEY = os.environ.get("INGOT_SECRET_KEY", "uO6_M2Jt4eW-PzHhIuU3C05iWw-C5K8V7h8J9sU4z6E=")
-
+SECRET_KEY = os.environ.get("INGOT_SECRET_KEY")
+if not SECRET_KEY:
+    raise ValueError("INGOT_SECRET_KEY environment variable is missing. Please set it securely.")
 fernet = Fernet(SECRET_KEY.encode('utf-8'))
 
 def encrypt_api_key(api_key: str) -> str:

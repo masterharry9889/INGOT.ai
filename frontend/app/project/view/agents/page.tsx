@@ -18,13 +18,10 @@ export default function AgentsView() {
     const params = new URLSearchParams(window.location.search);
     setProjectId(params.get('id'));
   }, []);
-  const storageKey = `ingot_active_agents_${projectId}`;
+  const storageKey = projectId ? `ingot_active_agents_${projectId}` : null;
 
   const [agents, setAgents] = useState<Agent[]>([]);
   const [activeAgents, setActiveAgents] = useState<string[]>([]);
-  
-  if (!projectId) return null;
-
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -36,6 +33,7 @@ export default function AgentsView() {
       })
       .catch(err => console.error("Failed to load agents", err));
 
+    if (!storageKey) return;
     const saved = localStorage.getItem(storageKey);
     if (saved) {
       try {
@@ -58,6 +56,8 @@ export default function AgentsView() {
         : [...prev, agentId]
     );
   };
+
+  if (!projectId || !isLoaded) return null;
 
   const filteredAgents = agents.filter(a => 
     a.name.toLowerCase().includes(searchQuery.toLowerCase()) || 

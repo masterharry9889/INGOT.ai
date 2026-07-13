@@ -62,14 +62,16 @@ class Orchestrator:
 
             schema_instruction = f"""
 First, provide your conversational response to the user. You may use markdown formatting and links.
-After your response, you MUST append a RAW JSON block enclosed in ```json ... ``` containing the entities and relations extracted from your response.
+After your response, you MUST append a RAW JSON block enclosed in ```json ... ``` containing the entities and relations extracted from your response. YOU MUST INCLUDE THIS JSON BLOCK EVEN IF NO ENTITIES WERE FOUND.
 
 The JSON MUST conform exactly to this schema:
 {json.dumps(agent_spec.output_schema)}
 
-IMPORTANT:
-- 'entities' MUST be an array of objects, each with 'id', 'label', and 'type' (e.g. {{"id": "moe", "label": "Mixture of Experts", "type": "Concept"}}).
-- 'relations' MUST be an array of objects, each with 'source', 'target', and 'type' (e.g. {{"source": "moe", "target": "neural_net", "type": "is_a"}}).
+IMPORTANT RULES:
+1. You must ALWAYS append the ```json ... ``` block at the very end of your response.
+2. If there are no entities, output ```json\n{{"summary": "...", "entities": [], "relations": []}}\n```
+3. 'entities' MUST be an array of objects, each with 'id', 'label', and 'type'.
+4. 'relations' MUST be an array of objects, each with 'source', 'target', and 'type'.
 """
 
             messages = [
@@ -91,12 +93,35 @@ IMPORTANT:
                     await publish_event(channel, "run.token", {"token": content})
                     
             try:
-                if "```json" in full_response:
-                    json_str = full_response.split("```json")[-1].split("```")[0].strip()
-                    parsed = json.loads(json_str)
-                    summary = full_response.split("```json")[0].strip()
+                # Try to parse the JSON block. Be forgiving if the LLM forgets the 'json' tag.
+                import re
+                json_str = None
+                json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', full_response, re.DOTALL)
+                if json_match:
+                    json_str = json_match.group(1).strip()
                 else:
-                    print("WARNING: LLM did not output a ```json block", flush=True)
+                    # Fallback to finding the last `{...}` block. We find the last `{` and then expand backwards until json.loads succeeds
+                    start_idx = full_response.rfind('{')
+                    end_idx = full_response.rfind('}')
+                    if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+                        # Try to find a valid JSON object by moving start_idx backwards to previous '{'
+                        temp_start = start_idx
+                        while temp_start >= 0:
+                            try:
+                                candidate = full_response[temp_start:end_idx+1]
+                                json.loads(candidate)
+                                json_str = candidate
+                                break
+                            except:
+                                temp_start = full_response.rfind('{', 0, temp_start)
+
+                if json_str:
+                    parsed = json.loads(json_str)
+                    summary = full_response[:full_response.rfind(json_str)].strip()
+                    # clean up any trailing ``` if they exist
+                    summary = summary.replace("```json", "").replace("```", "").strip()
+                else:
+                    print("WARNING: LLM did not output a JSON block", flush=True)
                     parsed = {"entities": [], "relations": []}
                     summary = full_response
             except Exception as e:
