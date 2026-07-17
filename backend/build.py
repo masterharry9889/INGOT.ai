@@ -4,7 +4,7 @@ import os
 backend_dir = os.path.dirname(os.path.abspath(__file__))
 
 PyInstaller.__main__.run([
-    os.path.join(backend_dir, 'main.py'),
+    os.path.join(backend_dir, 'run_backend.py'),
     '--name=brainweb-backend',
     '--onefile',
     '--hidden-import=uvicorn',
