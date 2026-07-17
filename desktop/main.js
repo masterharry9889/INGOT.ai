@@ -58,6 +58,12 @@ function startBackend() {
       reject(err);
     });
 
+    backendProcess.on('close', (code) => {
+      if (code !== 0) {
+        reject(new Error(`Backend process exited unexpectedly with code ${code}. Check backend logs or missing dependencies.`));
+      }
+    });
+
     // Simple polling to check when backend is up
     let retries = 0;
     const interval = setInterval(() => {
