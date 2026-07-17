@@ -18,7 +18,11 @@ function createWindow() {
   });
 
   // Load the static export of Next.js
-  mainWindow.loadFile(path.join(__dirname, 'app', 'index.html'));
+  const frontendPath = app.isPackaged
+    ? path.join(process.resourcesPath, 'app', 'index.html')
+    : path.join(__dirname, '..', 'frontend', 'out', 'index.html');
+    
+  mainWindow.loadFile(frontendPath);
 
   mainWindow.on('closed', function () {
     mainWindow = null;
