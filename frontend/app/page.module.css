@@ -1,142 +1,271 @@
-.page {
-  --background: #fafafa;
-  --foreground: #fff;
-
-  --text-primary: #000;
-  --text-secondary: #666;
-
-  --button-primary-hover: #383838;
-  --button-secondary-hover: #f2f2f2;
-  --button-secondary-border: #ebebeb;
-
+.mainContainer {
   display: flex;
-  flex: 1;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  align-items: center;
+  overflow-y: auto;
+  position: relative;
+}
+
+.dashboardContent {
+  width: 100%;
+  padding: 3rem 5%;
+}
+
+.dashboardHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3rem;
+}
+
+.dashboardTitle {
+  font-size: 2.5rem;
+  margin: 0;
+}
+
+.emptyStateContainer {
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-geist-sans);
-  background-color: var(--background);
-}
-
-.main {
-  display: flex;
-  flex: 1;
-  width: 100%;
-  max-width: 800px;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-  background-color: var(--foreground);
-  padding: 120px 60px;
-}
-
-.intro {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  gap: 24px;
-}
-
-.intro h1 {
-  max-width: 320px;
-  font-size: 40px;
-  font-weight: 600;
-  line-height: 48px;
-  letter-spacing: -2.4px;
-  text-wrap: balance;
-  color: var(--text-primary);
-}
-
-.intro p {
-  max-width: 440px;
-  font-size: 18px;
-  line-height: 32px;
-  text-wrap: balance;
+  padding: 6rem 2rem;
+  background: var(--glass-bg);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
   color: var(--text-secondary);
 }
 
-.intro a {
-  font-weight: 500;
+.emptyStateIcon {
+  opacity: 0.5;
+  margin-bottom: 1.5rem;
+}
+
+.emptyStateTitle {
+  margin-bottom: 0.5rem;
   color: var(--text-primary);
 }
 
-.ctas {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  max-width: 440px;
-  gap: 16px;
-  font-size: 14px;
+.emptyStateText {
+  text-align: center;
+  max-width: 400px;
+  margin-bottom: 2rem;
 }
 
-.ctas a {
+.projectsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.fab {
+  position: fixed;
+  bottom: 2rem;
+  right: 3rem;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+  border: none;
+  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.4);
   display: flex;
-  justify-content: center;
   align-items: center;
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 128px;
-  border: 1px solid transparent;
-  transition: 0.2s;
+  justify-content: center;
   cursor: pointer;
-  width: fit-content;
-  font-weight: 500;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  z-index: 50;
 }
 
-a.primary {
-  background: var(--text-primary);
-  color: var(--background);
-  gap: 8px;
+.fab:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 40px rgba(236, 72, 153, 0.5);
 }
 
-a.secondary {
-  border-color: var(--button-secondary-border);
+/* DashboardHeader.tsx styles */
+.header {
+  width: 100%;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-/* Enable hover only on non-touch devices */
-@media (hover: hover) and (pointer: fine) {
-  a.primary:hover {
-    background: var(--button-primary-hover);
-    border-color: transparent;
-  }
-
-  a.secondary:hover {
-    background: var(--button-secondary-hover);
-    border-color: transparent;
-  }
+.logoContainer {
+  font-size: 1.5rem;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-@media (max-width: 600px) {
-  .main {
-    padding: 48px 24px;
-  }
-
-  .intro {
-    gap: 16px;
-  }
-
-  .intro h1 {
-    font-size: 32px;
-    line-height: 40px;
-    letter-spacing: -1.92px;
-  }
+.logoImg {
+  height: 36px;
+  width: auto;
+  border-radius: 8px;
 }
 
-@media (prefers-color-scheme: dark) {
-  .logo {
-    filter: invert();
-  }
+.settingsBtn {
+  background: transparent;
+  margin: 0;
+}
 
-  .page {
-    --background: #000;
-    --foreground: #000;
+/* ProjectCard.tsx styles */
+.card {
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
 
-    --text-primary: #ededed;
-    --text-secondary: #999;
+.card:hover {
+  transform: translateY(-4px);
+}
 
-    --button-primary-hover: #ccc;
-    --button-secondary-hover: #1a1a1a;
-    --button-secondary-border: #1a1a1a;
-  }
+.cardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 1.2rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: 1rem;
+}
+
+.cardActions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.deleteBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.deleteBtn:hover {
+  color: #ef4444;
+}
+
+.cardBottom {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+}
+
+/* CreateProjectModal.tsx styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modalContent {
+  width: 100%;
+  max-width: 500px;
+  padding: 2rem;
+  animation: slideUp 0.3s ease;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.typeGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.typeCard {
+  padding: 1.5rem 1rem;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.typeCardConversationActive {
+  border-color: var(--primary);
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.typeCardUploadActive {
+  border-color: var(--secondary);
+  background: rgba(236, 72, 153, 0.1);
+}
+
+.typeIcon {
+  margin: 0 auto 0.75rem;
+}
+
+.typeLabel {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.typeLabelActive {
+  color: white;
+}
+
+.formGroup {
+  margin-bottom: 2rem;
+}
+
+.fileInput {
+  width: 100%;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
 }

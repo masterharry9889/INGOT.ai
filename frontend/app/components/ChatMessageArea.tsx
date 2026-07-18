@@ -3,6 +3,7 @@ import { Send, Bot, User } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import CursorTrackingLink from '@/app/components/CursorTrackingLink';
+import styles from '../project/view/chat/chat.module.css';
 
 export interface Message {
   id: string;
@@ -31,11 +32,11 @@ export default function ChatMessageArea({
   messagesEndRef
 }: ChatMessageAreaProps) {
   return (
-    <div className="chat-container" style={{ flex: 1, padding: '2rem 10%', height: 'calc(100vh - 5rem)', position: 'relative' }}>
-      <div className="chat-messages" style={{ height: 'calc(100% - 80px)' }}>
+    <div className={`chat-container ${styles.chatContainer}`}>
+      <div className={`chat-messages ${styles.chatMessages}`}>
         {messages.length === 0 && (
-          <div style={{ margin: 'auto', textAlign: 'center', color: 'var(--text-secondary)' }}>
-            <Bot size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
+          <div className={styles.emptyChatState}>
+            <Bot size={48} className={styles.emptyChatIcon} />
             <h3>Select an agent and start chatting</h3>
           </div>
         )}
@@ -57,14 +58,14 @@ export default function ChatMessageArea({
                 </ReactMarkdown>
               </div>
               {msg.role === 'agent' && msg.status === 'streaming' && (
-                <span style={{ display: 'inline-block', width: '8px', height: '16px', background: 'var(--primary)', marginLeft: '4px', animation: 'pulse 1s infinite' }} />
+                <span className={styles.streamingIndicator} />
               )}
               {msg.parsedData && msg.parsedData.entities && msg.parsedData.entities.length > 0 && (
-                <div style={{ marginTop: '1rem', padding: '0.75rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', fontSize: '0.85rem' }}>
+                <div className={styles.entitiesContainer}>
                   <strong>Extracted Entities:</strong>
-                  <ul style={{ margin: '0.5rem 0 0 1.5rem' }}>
+                  <ul className={styles.entitiesList}>
                     {msg.parsedData.entities.map((e: any, i: number) => (
-                      <li key={i}>{e.label} <span style={{ color: 'var(--text-secondary)' }}>({e.type})</span></li>
+                      <li key={i}>{e.label} <span className={styles.entityType}>({e.type})</span></li>
                     ))}
                   </ul>
                 </div>
@@ -75,7 +76,7 @@ export default function ChatMessageArea({
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="chat-input-area" style={{ position: 'absolute', bottom: '2rem', left: '10%', right: '10%' }}>
+      <div className={`chat-input-area ${styles.chatInputArea}`}>
         <input 
           type="text" 
           className="chat-input" 

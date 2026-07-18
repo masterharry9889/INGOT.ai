@@ -10,6 +10,7 @@ import { fetchApi } from '@/lib/api';
 import DashboardHeader from './components/DashboardHeader';
 import ProjectCard, { Project } from './components/ProjectCard';
 import CreateProjectModal from './components/CreateProjectModal';
+import styles from './page.module.css';
 
 export default function MainView() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -125,43 +126,25 @@ export default function MainView() {
   };
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      height: '100%', 
-      width: '100%',
-      alignItems: 'center',
-      overflowY: 'auto',
-      position: 'relative'
-    }}>
+    <div className={styles.mainContainer}>
       {/* Dashboard Minimal Header */}
       <DashboardHeader />
       
-      <div style={{ width: '100%', padding: '3rem 5%' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
-          <h1 style={{ fontSize: '2.5rem', margin: 0 }}>Your Dashboard</h1>
+      <div className={styles.dashboardContent}>
+        <div className={styles.dashboardHeaderRow}>
+          <h1 className={styles.dashboardTitle}>Your Dashboard</h1>
         </div>
 
         {projects.length === 0 ? (
-          <div style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            padding: '6rem 2rem',
-            background: 'var(--glass-bg)',
-            border: '1px dashed rgba(255,255,255,0.2)',
-            borderRadius: '16px',
-            color: 'var(--text-secondary)'
-          }}>
-            <MessageSquare size={48} style={{ opacity: 0.5, marginBottom: '1.5rem' }} />
-            <h3 style={{ marginBottom: '0.5rem', color: 'var(--text-primary)' }}>No activity yet</h3>
-            <p style={{ textAlign: 'center', maxWidth: '400px', marginBottom: '2rem' }}>
+          <div className={styles.emptyStateContainer}>
+            <MessageSquare size={48} className={styles.emptyStateIcon} />
+            <h3 className={styles.emptyStateTitle}>No activity yet</h3>
+            <p className={styles.emptyStateText}>
               Click the + button in the bottom corner to start a new independent conversation or upload a new project.
             </p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+          <div className={styles.projectsGrid}>
             {projects.map(p => (
               <ProjectCard key={p.id} project={p} onDelete={handleDeleteProject} />
             ))}
@@ -172,32 +155,7 @@ export default function MainView() {
       {/* Floating Action Button */}
       <button 
         onClick={() => setIsModalOpen(true)}
-        style={{
-          position: 'fixed',
-          bottom: '2rem',
-          right: '3rem',
-          width: '64px',
-          height: '64px',
-          borderRadius: '50%',
-          background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
-          color: 'white',
-          border: 'none',
-          boxShadow: '0 8px 32px rgba(99, 102, 241, 0.4)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-          transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-          zIndex: 50
-        }}
-        onMouseEnter={e => {
-          e.currentTarget.style.transform = 'scale(1.05)';
-          e.currentTarget.style.boxShadow = '0 12px 40px rgba(236, 72, 153, 0.5)';
-        }}
-        onMouseLeave={e => {
-          e.currentTarget.style.transform = 'scale(1)';
-          e.currentTarget.style.boxShadow = '0 8px 32px rgba(99, 102, 241, 0.4)';
-        }}
+        className={styles.fab}
       >
         <Plus size={32} />
       </button>

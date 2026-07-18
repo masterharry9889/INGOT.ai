@@ -1,0 +1,193 @@
+/* Chat Page Styles */
+.chatPageContainer {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  padding-top: 5rem;
+}
+
+/* ChatSidebar Styles */
+.sidebar {
+  width: 260px;
+  border-right: 1px solid var(--glass-border);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+  padding: 1.5rem;
+  z-index: 10;
+}
+
+.sidebarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.sidebarTitle {
+  font-size: 1.2rem;
+  margin: 0;
+  font-family: 'Outfit';
+  font-weight: 600;
+  color: white;
+}
+
+.newChatBtn {
+  margin: 0;
+  width: 32px;
+  height: 32px;
+}
+
+.chatList {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.chatItem {
+  padding: 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+  background: transparent;
+  border-left: 2px solid transparent;
+  color: var(--text-secondary);
+}
+
+.chatItem:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.chatItemActive {
+  background: rgba(255, 255, 255, 0.08);
+  border-left-color: var(--primary);
+  color: var(--text-primary);
+}
+
+.chatItemActive:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.editChatContainer {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 0.5rem;
+}
+
+.editChatInput {
+  flex: 1;
+  width: 100%;
+  background: #000;
+  border: 1px solid var(--primary);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  outline: none;
+  font-size: 0.9rem;
+}
+
+.editChatConfirmBtn {
+  background: none;
+  border: none;
+  color: var(--success);
+  cursor: pointer;
+  padding: 0;
+}
+
+.chatItemName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.chatItemActions {
+  display: flex;
+  gap: 0.4rem;
+  transition: opacity 0.2s;
+}
+
+.actionBtn {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0.1rem;
+}
+
+.actionIconEdit {
+  transition: color 0.2s;
+}
+.actionIconEdit:hover {
+  color: var(--primary);
+}
+
+.actionIconDelete {
+  transition: color 0.2s;
+}
+.actionIconDelete:hover {
+  color: #ef4444;
+}
+
+/* ChatMessageArea Styles */
+.chatContainer {
+  flex: 1;
+  padding: 2rem 10%;
+  height: calc(100vh - 5rem);
+  position: relative;
+}
+
+.chatMessages {
+  height: calc(100% - 80px);
+}
+
+.emptyChatState {
+  margin: auto;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.emptyChatIcon {
+  margin: 0 auto 1rem;
+  opacity: 0.5;
+}
+
+.streamingIndicator {
+  display: inline-block;
+  width: 8px;
+  height: 16px;
+  background: var(--primary);
+  margin-left: 4px;
+  animation: pulse 1s infinite;
+}
+
+.entitiesContainer {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.entitiesList {
+  margin: 0.5rem 0 0 1.5rem;
+}
+
+.entityType {
+  color: var(--text-secondary);
+}
+
+.chatInputArea {
+  position: absolute;
+  bottom: 2rem;
+  left: 10%;
+  right: 10%;
+}

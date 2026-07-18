@@ -7,6 +7,7 @@ import { API_BASE_URL as API_BASE } from '@/lib/config';
 const WS_BASE = API_BASE.replace(/^http/, 'ws');
 import ChatSidebar from '@/app/components/ChatSidebar';
 import ChatMessageArea, { Message } from '@/app/components/ChatMessageArea';
+import styles from './chat.module.css';
 
 interface Agent {
   id: string;
@@ -276,7 +277,7 @@ export default function ChatView() {
   if (!projectId) return null;
 
   return (
-    <div style={{ display: 'flex', height: '100%', width: '100%', paddingTop: '5rem' }}>
+    <div className={styles.chatPageContainer}>
       
       <ChatSidebar 
         chats={chats}

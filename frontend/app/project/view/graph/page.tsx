@@ -10,6 +10,7 @@ import { API_BASE_URL as API_BASE } from '@/lib/config';
 const WS_BASE = API_BASE.replace(/^http/, 'ws');
 
 import NodeEditorPanel from '@/app/components/NodeEditorPanel';
+import styles from './graph.module.css';
 
 export default function GraphView() {
   const [projectId, setProjectId] = useState<string | null>(null);
@@ -250,23 +251,16 @@ export default function GraphView() {
   if (!projectId) return null;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 64px)', width: '100%', paddingTop: '4rem' }}>
+    <div className={styles.graphPageContainer}>
       
       {/* Top Bar for Graph Controls */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0 2rem' }}>
+      <div className={styles.topBar}>
         <button 
           onClick={() => {
             setEditMode(!editMode);
             closePanel();
           }}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '0.5rem',
-            padding: '0.5rem 1rem', borderRadius: '8px',
-            background: editMode ? 'var(--primary)' : 'var(--glass-bg)',
-            border: `1px solid ${editMode ? 'var(--primary)' : 'var(--glass-border)'}`,
-            color: 'white', cursor: 'pointer', transition: 'all 0.2s',
-            boxShadow: editMode ? '0 0 15px rgba(99, 102, 241, 0.4)' : 'none'
-          }}
+          className={`${styles.editModeBtn} ${editMode ? styles.editModeBtnActive : styles.editModeBtnInactive}`}
         >
           {editMode ? <MousePointer2 size={18} /> : <Edit3 size={18} />}
           {editMode ? 'Exit Edit Mode' : 'Edit Graph'}
@@ -275,20 +269,14 @@ export default function GraphView() {
 
       {/* Editor State Banner */}
       {editMode && (connectSource || mergeSource) && (
-        <div style={{
-          position: 'absolute', top: '6rem', left: '50%', transform: 'translateX(-50%)', zIndex: 10,
-          background: 'rgba(15, 17, 21, 0.9)', padding: '0.75rem 1.5rem', borderRadius: '24px',
-          border: `1px solid ${connectSource ? '#fbbf24' : '#f87171'}`,
-          color: 'white', display: 'flex', alignItems: 'center', gap: '0.5rem',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.5)', backdropFilter: 'blur(10px)'
-        }}>
+        <div className={`${styles.editorBanner} ${connectSource ? styles.editorBannerConnect : styles.editorBannerMerge}`}>
           {connectSource ? <LinkIcon size={16} color="#fbbf24" /> : <GitMerge size={16} color="#f87171" />}
           <span>
             {connectSource ? `Select target node to connect with "${connectSource.label}"` : `Select target node to merge "${mergeSource.label}" into`}
           </span>
           <button 
             onClick={() => { setConnectSource(null); setMergeSource(null); }}
-            style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', marginLeft: '1rem', padding: '0.25rem' }}
+            className={styles.closeBannerBtn}
           >
             <X size={14} />
           </button>
@@ -296,7 +284,7 @@ export default function GraphView() {
       )}
 
       {/* Graph Container */}
-      <div style={{ flex: 1, position: 'relative', margin: '1rem', borderRadius: '12px', overflow: 'hidden' }} className="glass" ref={containerRef}>
+      <div className={`glass ${styles.graphContainer}`} ref={containerRef}>
         <ForceGraph2D
           width={dimensions.width}
           height={dimensions.height}
