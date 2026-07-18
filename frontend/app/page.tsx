@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { Plus, X, MessageSquare, ArrowRight, Upload, MessageCircle, Settings, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { API_BASE_URL } from '@/lib/config';
+import { fetchApi } from '@/lib/api';
 
 interface Project {
   id: string;
@@ -62,7 +64,7 @@ export default function MainView() {
     
     // Wipe backend resources
     try {
-      await fetch(`http://127.0.0.1:8000/graph/${id}`, { method: 'DELETE' });
+      await fetchApi(`${API_BASE_URL}/graph/${id}`, { method: 'DELETE' });
     } catch (err) {
       console.error("Failed to delete backend graph for project", id, err);
     }
@@ -92,7 +94,7 @@ export default function MainView() {
       }
       
       try {
-        const res = await fetch(`http://127.0.0.1:8000/project/upload`, {
+        const res = await fetch(`${API_BASE_URL}/project/upload`, {
           method: 'POST',
           body: formData
         });
@@ -122,7 +124,7 @@ export default function MainView() {
     setIsModalOpen(false);
     setIsUploading(false);
     
-    router.push(`/project/view/chat?id=${newProjectId}`);
+    window.location.href = `./project/view/chat/index.html?id=${newProjectId}`;
   };
 
   return (
@@ -138,12 +140,12 @@ export default function MainView() {
       {/* Dashboard Minimal Header */}
       <header style={{ width: '100%', padding: '1rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div className="logo-small" style={{ fontSize: '1.5rem', padding: 0, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <img src="/logo.webp" alt="BrainWeb Logo" style={{ height: '36px', width: 'auto', borderRadius: '8px' }} />
+          <img src="./logo.webp" alt="BrainWeb Logo" style={{ height: '36px', width: 'auto', borderRadius: '8px' }} />
           BrainWeb
         </div>
-        <Link href="/settings" className="notch-icon-btn" style={{ background: 'transparent', margin: 0 }} title="Settings">
+        <a href="./settings/index.html" className="notch-icon-btn" style={{ background: 'transparent', margin: 0 }} title="Settings">
           <Settings size={20} />
-        </Link>
+        </a>
       </header>
       
       <div style={{ width: '100%', padding: '3rem 5%' }}>
@@ -174,7 +176,7 @@ export default function MainView() {
             {projects.map(p => (
               <div 
                 key={p.id} 
-                onClick={() => router.push(`/project/view/chat?id=${p.id}`)}
+                onClick={() => window.location.href = `./project/view/chat/index.html?id=${p.id}`}
                 className="glass" 
                 style={{ 
                   padding: '1.5rem', 

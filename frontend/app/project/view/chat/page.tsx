@@ -7,8 +7,8 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import CursorTrackingLink from '@/app/components/CursorTrackingLink';
 
-const API_BASE = 'http://127.0.0.1:8000';
-const WS_BASE = 'ws://127.0.0.1:8000';
+import { API_BASE_URL as API_BASE } from '@/lib/config';
+const WS_BASE = API_BASE.replace(/^http/, 'ws');
 
 interface Agent {
   id: string;

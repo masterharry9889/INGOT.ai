@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Save, Plus, Trash2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
-const API_BASE = 'http://127.0.0.1:8000';
+import { API_BASE_URL as API_BASE } from '@/lib/config';
 
 export default function SettingsView() {
   const [settings, setSettings] = useState({ provider: 'anthropic', api_key: '', model_name: 'claude-3-5-sonnet-20240620' });
@@ -108,9 +108,9 @@ export default function SettingsView() {
   return (
     <div style={{ padding: '2rem 5%', height: '100%', overflowY: 'auto', width: '100%' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-        <Link href="/" className="notch-icon-btn" title="Back to Dashboard" style={{ margin: 0 }}>
+        <a href="../../index.html" className="notch-icon-btn" title="Back to Dashboard" style={{ margin: 0 }}>
           <ArrowLeft size={20} />
-        </Link>
+        </a>
         <h1 style={{ margin: 0 }}>Settings</h1>
       </div>
       

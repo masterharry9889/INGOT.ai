@@ -6,8 +6,8 @@ import { Edit3, X, Save, Trash2, Link as LinkIcon, GitMerge, MousePointer2 } fro
 
 const ForceGraph2D = dynamic(() => import('react-force-graph-2d'), { ssr: false });
 
-const API_BASE = 'http://127.0.0.1:8000';
-const WS_BASE = 'ws://127.0.0.1:8000';
+import { API_BASE_URL as API_BASE } from '@/lib/config';
+const WS_BASE = API_BASE.replace(/^http/, 'ws');
 
 export default function GraphView() {
   const [projectId, setProjectId] = useState<string | null>(null);

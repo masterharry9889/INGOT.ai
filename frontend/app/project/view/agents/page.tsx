@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from 'react';
 import { Bot, Check, Search, Info } from 'lucide-react';
 
-const API_BASE = 'http://127.0.0.1:8000';
+import { API_BASE_URL as API_BASE } from '@/lib/config';
 
 interface Agent {
   id: string;
