@@ -117,7 +117,11 @@ export default function MainView() {
       localStorage.setItem(`brainweb_chats_${newProjectId}`, JSON.stringify([{ id: 'default', name: 'Default Chat' }]));
     }
     
-    setProjects([newProject, ...projects]);
+    setProjects(prev => {
+      const newProjects = [newProject, ...prev];
+      localStorage.setItem('brainweb_projects', JSON.stringify(newProjects));
+      return newProjects;
+    });
     setProjectName('');
     setSelectedFiles(null);
     setIsModalOpen(false);

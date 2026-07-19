@@ -143,20 +143,36 @@ IMPORTANT RULES:
             if agent_spec.id == "orchestrator-agent":
                 sub_agents_ids = input_data.get("sub_agents", [])
                 sub_results = {}
+                accumulated_entities = []
+                accumulated_relations = []
                 
                 # Execute sub-agents
                 for sid in sub_agents_ids:
                     s_spec = self.agents.get(sid)
                     if s_spec and s_spec.id != "orchestrator-agent":
                         await publish_event(channel, "run.token", {"token": f"\n\n*[Consulting {s_spec.name}...]*\n\n"})
-                        out = await self._execute_agent_logic(s_spec, input_data, user_setting, None)
+                        out = await self._execute_agent_logic(s_spec, input_data, user_setting, channel)
                         sub_results[s_spec.name] = out.summary
+                        if out.entities:
+                            for e in out.entities:
+                                e["id"] = f"{s_spec.id}_{e.get('id')}"
+                            accumulated_entities.extend(out.entities)
+                        if out.relations:
+                            for r in out.relations:
+                                r["source"] = f"{s_spec.id}_{r.get('source')}"
+                                r["target"] = f"{s_spec.id}_{r.get('target')}"
+                            accumulated_relations.extend(out.relations)
                         
                 orch_input = {
                     "user_query": input_data.get("query"),
                     "sub_agent_findings": sub_results
                 }
                 output = await self._execute_agent_logic(agent_spec, orch_input, user_setting, channel)
+                
+                if accumulated_entities:
+                    output.entities.extend(accumulated_entities)
+                if accumulated_relations:
+                    output.relations.extend(accumulated_relations)
             else:
                 output = await self._execute_agent_logic(agent_spec, input_data, user_setting, channel)
             

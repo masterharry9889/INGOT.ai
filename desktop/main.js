@@ -39,16 +39,26 @@ function startBackend() {
     const isWin = process.platform === 'win32';
     const binaryName = isWin ? 'brainweb-backend.exe' : 'brainweb-backend';
 
-    const backendPath = app.isPackaged 
-      ? path.join(process.resourcesPath, binaryName)
-      : path.join(__dirname, '..', 'backend', 'dist', binaryName);
-
-    console.log("Starting backend at:", backendPath);
-    
-    backendProcess = spawn(backendPath, [], { 
-      cwd: path.dirname(backendPath),
-      detached: false 
-    });
+    if (app.isPackaged) {
+      const backendPath = path.join(process.resourcesPath, binaryName);
+      console.log("Starting packaged backend at:", backendPath);
+      backendProcess = spawn(backendPath, [], { 
+        cwd: path.dirname(backendPath),
+        detached: false,
+        env: { ...process.env, PARENT_PID: String(process.pid) }
+      });
+    } else {
+      const pythonPath = isWin 
+        ? path.join(__dirname, '..', 'venv', 'Scripts', 'python.exe')
+        : path.join(__dirname, '..', 'venv', 'bin', 'python');
+      const mainPyPath = path.join(__dirname, '..', 'backend', 'main.py');
+      console.log("Starting dev backend using python at:", mainPyPath);
+      backendProcess = spawn(pythonPath, [mainPyPath], { 
+        cwd: path.join(__dirname, '..', 'backend'),
+        detached: false,
+        env: { ...process.env, PARENT_PID: String(process.pid) }
+      });
+    }
 
     backendProcess.stdout.on('data', (data) => {
       console.log(`Backend stdout: ${data}`);
@@ -79,7 +89,7 @@ function startBackend() {
         }
       }).on('error', (err) => {
         retries++;
-        if (retries > 30) { // Wait up to 15 seconds
+        if (retries > 120) { // Wait up to 60 seconds
           clearInterval(interval);
           reject(new Error("Backend timeout"));
         }

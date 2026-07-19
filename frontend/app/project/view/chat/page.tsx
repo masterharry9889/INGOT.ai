@@ -159,7 +159,11 @@ export default function ChatView() {
       setEditingChatId(null);
       return;
     }
-    setChats(chats.map(c => c.id === editingChatId ? { ...c, name: editingChatName.trim() } : c));
+    setChats(prev => {
+      const newChats = prev.map(c => c.id === editingChatId ? { ...c, name: editingChatName.trim() } : c);
+      localStorage.setItem(`brainweb_chats_${projectId}`, JSON.stringify(newChats));
+      return newChats;
+    });
     setEditingChatId(null);
   };
 
